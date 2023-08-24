@@ -1,28 +1,23 @@
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:dio/dio.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
-import 'package:rapyd/meme_post/meme.dart';
+import 'package:rapyd/models/meme_post/meme.dart';
 import 'package:rapyd/network/network.dart';
 
 class HomeScreen extends StatefulWidget {
-  HomeScreen({Key? key}) : super(key: key);
+  const HomeScreen({Key? key}) : super(key: key);
 
   @override
-  _PostState createState() => _PostState();
+  _HomeScreenState createState() => _HomeScreenState();
 }
 
-class _PostState extends State<HomeScreen> {
-  List<Meme> postsList = [];
+class _HomeScreenState extends State<HomeScreen> {
+  List<Meme> memeList = [];
   final RefreshController _refreshController =
       RefreshController(initialRefresh: false);
   final ScrollController _scrollController = ScrollController();
-  final Dio dio = Dio();
   int page = 1;
-  bool downloadIsPressed = false;
-  double progress = 0.0;
 
   void _bottomSheet(BuildContext context) {
     showModalBottomSheet(
@@ -30,7 +25,23 @@ class _PostState extends State<HomeScreen> {
       isScrollControlled: true,
       elevation: 5,
       context: context,
-      builder: (context) => _bottomSheetView(),
+      builder: (context) => Container(
+        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              "To Continue Enjoying More Memes, Please Subscribe for a Plan.",
+              textAlign: TextAlign.center,
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            ElevatedButton.icon(
+                onPressed: () {},
+                icon: const Icon(Icons.subscriptions_rounded),
+                label: const Text('Subscribe To Mewery')),
+          ],
+        ),
+      ),
     );
   }
 
@@ -41,92 +52,74 @@ class _PostState extends State<HomeScreen> {
   }
 
   Future refresh() async {
-    if (kDebugMode) {
-      print('**** REFRESHING ****    page: $page');
+    // If the user has seen more than 50 memes, prompt for a subscription
+    if (memeList.length > 50) {
+      _bottomSheet(context);
+    } else {
+      List<Meme> list = await NetworkConnection().getMemePosts();
+      if (mounted) {
+        setState(() {
+          page += 1;
+          memeList = list;
+        });
+      }
     }
-    List<Meme> list = await NetworkConnection().getMemePosts();
-    if (mounted) {
-      setState(() {
-        page += 1;
-        postsList = list;
-        _refreshController.refreshCompleted();
-      });
-    }
+    _refreshController.refreshCompleted();
   }
 
   @override
   Widget build(BuildContext context) {
-    return SmartRefresher(
-      controller: _refreshController,
-      enablePullUp: true,
-      header: const ClassicHeader(),
-      onRefresh: refresh,
-      onLoading: () async {
-        if (kDebugMode) {
-          print('**** LOADING ****');
-        }
-        if (postsList.length > 50) {
-          _bottomSheet(context);
-        } else {
-          page += 1;
-          List<Meme> list = await NetworkConnection().getMemePosts();
-          postsList.addAll(list);
-          if (mounted) {
-            setState(() {
-              _refreshController.loadComplete();
-            });
-          }
-        }
-      },
-      child: MasonryGridView.count(
-        padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 0.0),
-        controller: _scrollController,
-        physics: const ClampingScrollPhysics(),
-        shrinkWrap: true,
-        itemCount: postsList.length,
-        crossAxisCount: 2,
-        mainAxisSpacing: 0,
-        crossAxisSpacing: 0,
-        itemBuilder: (context, index) {
-          return _gridView(index);
-        },
-      ),
-    );
-  }
-
-  Widget _gridView(int index) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(10),
-      child: CachedNetworkImage(
-        imageUrl: postsList[index].url!,
-        placeholder: (context, url) => AspectRatio(
-            aspectRatio: postsList[index].width! / postsList[index].height!,
-            child: Container(
-              color: Colors.cyan,
-            )),
-        errorWidget: (context, url, error) => const Icon(Icons.error),
-        fit: BoxFit.cover,
-      ),
-    );
-  }
-
-  Widget _bottomSheetView() {
-    return Container(
-      height: MediaQuery.of(context).size.shortestSide > 600
-          ? MediaQuery.of(context).size.height * 0.41
-          : MediaQuery.of(context).size.height * 0.5,
-      color: Colors.white,
-      child: Row(
-        children: [
-          IconButton(
-            icon: const Icon(Icons.subscriptions),
-            onPressed: () {
-              Navigator.pop(context);
-            },
-          ),
-          const Text('Subscribe To Mewery')
-        ],
-      ),
+    return Scaffold(
+      body: memeList.isEmpty
+          ? const Center(
+              child: CircularProgressIndicator(),
+            )
+          : SmartRefresher(
+              controller: _refreshController,
+              enablePullUp: true,
+              header: const ClassicHeader(),
+              onRefresh: refresh,
+              onLoading: () async {
+                // If the user has seen more than 50 memes, prompt for a subscription
+                if (memeList.length > 50) {
+                  _bottomSheet(context);
+                } else {
+                  page += 1;
+                  List<Meme> list = await NetworkConnection().getMemePosts();
+                  memeList.addAll(list);
+                  if (mounted) {
+                    setState(() {
+                      _refreshController.loadComplete();
+                    });
+                  }
+                }
+              },
+              child: MasonryGridView.count(
+                controller: _scrollController,
+                physics: const ClampingScrollPhysics(),
+                shrinkWrap: true,
+                itemCount: memeList.length,
+                crossAxisCount: 2,
+                mainAxisSpacing: 4,
+                crossAxisSpacing: 4,
+                itemBuilder: (context, index) {
+                  return CachedNetworkImage(
+                    imageUrl: memeList[index].url,
+                    placeholder: (context, url) => AspectRatio(
+                        aspectRatio:
+                            memeList[index].width / memeList[index].height,
+                        child: Container(
+                          color: Colors.grey[200],
+                        )),
+                    errorWidget: (context, url, error) => AspectRatio(
+                        aspectRatio:
+                            memeList[index].width / memeList[index].height,
+                        child: const Icon(Icons.error)),
+                    fit: BoxFit.cover,
+                  );
+                },
+              ),
+            ),
     );
   }
 }

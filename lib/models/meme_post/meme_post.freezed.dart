@@ -14,7 +14,7 @@ T _$identity<T>(T value) => value;
 final _privateConstructorUsedError = UnsupportedError(
     'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#custom-getters-and-methods');
 
-MemePost _$MemePostFromJson(Map<String, dynamic> json) {
+MemeData _$MemePostFromJson(Map<String, dynamic> json) {
   return _MemePost.fromJson(json);
 }
 
@@ -25,14 +25,14 @@ mixin _$MemePost {
 
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
   @JsonKey(ignore: true)
-  $MemePostCopyWith<MemePost> get copyWith =>
+  $MemePostCopyWith<MemeData> get copyWith =>
       throw _privateConstructorUsedError;
 }
 
 /// @nodoc
 abstract class $MemePostCopyWith<$Res> {
-  factory $MemePostCopyWith(MemePost value, $Res Function(MemePost) then) =
-      _$MemePostCopyWithImpl<$Res, MemePost>;
+  factory $MemePostCopyWith(MemeData value, $Res Function(MemeData) then) =
+      _$MemePostCopyWithImpl<$Res, MemeData>;
   @useResult
   $Res call({bool success, Data data});
 
@@ -40,7 +40,7 @@ abstract class $MemePostCopyWith<$Res> {
 }
 
 /// @nodoc
-class _$MemePostCopyWithImpl<$Res, $Val extends MemePost>
+class _$MemePostCopyWithImpl<$Res, $Val extends MemeData>
     implements $MemePostCopyWith<$Res> {
   _$MemePostCopyWithImpl(this._value, this._then);
 
@@ -162,7 +162,7 @@ class _$_MemePost implements _MemePost {
   }
 }
 
-abstract class _MemePost implements MemePost {
+abstract class _MemePost implements MemeData {
   factory _MemePost({final bool success, required final Data data}) =
       _$_MemePost;
 
