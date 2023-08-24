@@ -1,15 +1,16 @@
 import 'dart:io';
-
 import 'package:dio/dio.dart';
-import 'package:rapyd/museum_post/museum_post.dart';
+import 'package:rapyd/meme_post/meme.dart';
+import 'package:rapyd/meme_post/meme_post.dart';
 
 class NetworkConnection {
   late final Dio dio;
   NetworkConnection([BaseOptions? options]) {
     dio = Dio(options);
     dio.options
-      ..connectTimeout = Duration(seconds: 10)
-      ..receiveTimeout = Duration(seconds: 10);
+      ..baseUrl = 'https://api.imgflip.com'
+      ..connectTimeout = Duration(seconds: 30)
+      ..receiveTimeout = Duration(seconds: 30);
   }
 
   // Or you can create dio instance and config it as follow:
@@ -23,14 +24,16 @@ class NetworkConnection {
   //    },
   //  ));
 
-  Future<List<MuseumPost>> getMuseumPosts() async {
+  Future<List<Meme>> getMemePosts() async {
     try {
-      Response response = await dio.get('path');
-      return response.data.map((data) => MuseumPost.fromJson(data)).toList();
+      Response response = await dio.get('/get_memes');
+      return MemePost.fromJson(response.data).data.memes ??[];
     } on DioException catch (e) {
       print(e.message);
     } on SocketException catch (e) {
       print(e.message);
+    } catch (e) {
+      print(e.toString());
     }
     return [];
   }
