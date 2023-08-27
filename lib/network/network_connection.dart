@@ -4,15 +4,13 @@ import 'package:dio/dio.dart';
 import 'package:rapyd/models/app_models.dart';
 
 class NetworkConnection {
-  late final Dio dio;
-  final baseOptions = BaseOptions(
+  final Dio dio = Dio(BaseOptions(
     baseUrl: 'https://api.imgflip.com',
     connectTimeout: const Duration(seconds: 30),
     receiveTimeout: const Duration(seconds: 30),
-  );
-  NetworkConnection([BaseOptions? options]) {
-    dio = Dio(options ?? baseOptions);
-  }
+  ));
+
+  NetworkConnection();
 
   Future<List<Meme>> getMemePosts() async {
     try {
