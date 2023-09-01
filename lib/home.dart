@@ -4,6 +4,7 @@ import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:rapyd/models/app_models.dart';
 import 'package:rapyd/network/network_connection.dart';
+import 'package:rapyd/select_plan_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -19,29 +20,24 @@ class _HomeScreenState extends State<HomeScreen> {
   final ScrollController _scrollController = ScrollController();
   int page = 1;
 
+  List<Country> countries = [];
+  List<Plan> plans = [];
   void _bottomSheet(BuildContext context) {
     showModalBottomSheet(
       barrierColor: Colors.transparent,
       isScrollControlled: true,
       elevation: 5,
       context: context,
-      builder: (context) => Container(
-        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text(
-              "To Continue Enjoying More Memes, Please Subscribe for a Plan.",
-              textAlign: TextAlign.center,
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-            ElevatedButton.icon(
-                onPressed: () {},
-                icon: const Icon(Icons.subscriptions_rounded),
-                label: const Text('Subscribe To Mewery')),
-          ],
-        ),
-      ),
+      builder: (ctx) => Container(
+          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+          child: (countries.isEmpty || plans.isEmpty)
+              ? const Center(
+                  child: CircularProgressIndicator(),
+                )
+              : SelectPlanScreen(
+                  countries: countries,
+                  plans: plans,
+                )),
     );
   }
 
